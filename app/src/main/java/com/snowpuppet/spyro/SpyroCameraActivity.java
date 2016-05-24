@@ -1,7 +1,10 @@
 package com.snowpuppet.spyro;
 
 import android.graphics.SurfaceTexture;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.TextureView;
@@ -11,9 +14,12 @@ public class SpyroCameraActivity extends AppCompatActivity {
 
     TextureView spyroTextureView;
 
+    private String mSpyroCameraId;
+
     TextureView.SurfaceTextureListener surfaceTextureListener = new TextureView.SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i1) {
+            spyroCameraSetup(i,i1);
 
         }
 
@@ -69,6 +75,7 @@ public class SpyroCameraActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if(spyroTextureView.isAvailable()) {
+            spyroCameraSetup(spyroTextureView.getWidth(),spyroTextureView.getHeight());
         } else {
             spyroTextureView.setSurfaceTextureListener(surfaceTextureListener);
         }
@@ -99,6 +106,24 @@ public class SpyroCameraActivity extends AppCompatActivity {
     /*
      * App methods
      */
+
+
+    private void spyroCameraSetup(int width, int height) {
+        CameraManager cameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
+
+        try {
+            for (String camId:
+                 cameraManager.getCameraIdList()) {
+                CameraCharacteristics cameraCharacteristics = cameraManager.getCameraCharacteristics(camId);
+                if(cameraCharacteristics.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT) {
+                    break;
+                }
+                mSpyroCameraId = camId;
+            }
+        }catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
 
     private void closeSpyroCamera() {
         if(mSpyroCamera !=null) {
