@@ -6,6 +6,8 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.support.v7.app.AppCompatActivity;
 import android.view.TextureView;
 import android.view.View;
@@ -63,6 +65,9 @@ public class SpyroCameraActivity extends AppCompatActivity {
         }
     };
 
+    private HandlerThread mSpyroHandlerThread;
+    private Handler mSpyroHandler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -74,6 +79,9 @@ public class SpyroCameraActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+
+        startSpyroThread();
+
         if(spyroTextureView.isAvailable()) {
             spyroCameraSetup(spyroTextureView.getWidth(),spyroTextureView.getHeight());
         } else {
@@ -83,8 +91,10 @@ public class SpyroCameraActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        super.onPause();
         closeSpyroCamera();
+        stopSpyroThread();
+
+        super.onPause();
     }
 
     @Override
@@ -131,5 +141,23 @@ public class SpyroCameraActivity extends AppCompatActivity {
             mSpyroCamera = null;
         }
 
+    }
+
+    private void startSpyroThread() {
+        mSpyroHandlerThread = new HandlerThread("SpyroBgThread");
+        mSpyroHandlerThread.start();
+        mSpyroHandler = new Handler(mSpyroHandlerThread.getLooper());
+    }
+
+    private void stopSpyroThread() {
+        mSpyroHandlerThread.quitSafely();
+
+        try {
+            mSpyroHandlerThread.join();
+            mSpyroHandlerThread = null;
+            mSpyroHandler = null;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
