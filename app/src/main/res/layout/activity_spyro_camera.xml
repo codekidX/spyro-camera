@@ -5,4 +5,12 @@
     android:layout_height="match_parent"
     tools:context="com.snowpuppet.spyro.SpyroCameraActivity">
 
+    <TextureView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/spyro_texture_view"
+        android:layout_centerVertical="true"
+        android:layout_centerHorizontal="true" />
+
+
 </RelativeLayout>
